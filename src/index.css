@@ -37,6 +37,7 @@
     --radius: 1rem;
 
     /* Custom tokens */
+    --streak: 25 95% 55%;
     --gradient-primary: linear-gradient(135deg, hsl(12 80% 62%), hsl(25 90% 55%));
     --gradient-secondary: linear-gradient(135deg, hsl(175 60% 45%), hsl(190 70% 50%));
     --gradient-accent: linear-gradient(135deg, hsl(270 60% 60%), hsl(290 70% 55%));
