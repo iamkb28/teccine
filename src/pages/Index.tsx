@@ -6,6 +6,7 @@ import PostCard from '@/components/PostCard';
 import EmojiReactions from '@/components/EmojiReactions';
 import FeedbackSection from '@/components/FeedbackSection';
 import CountdownTimer from '@/components/CountdownTimer';
+import DailyStreak from '@/components/DailyStreak';
 import { getTodayPost, getArchivedPosts } from '@/data/posts';
 
 const Index = () => {
@@ -33,11 +34,20 @@ const Index = () => {
           </section>
         )}
 
+        {/* Daily Streak */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <DailyStreak />
+        </motion.section>
+
         {/* Countdown Timer */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.8 }}
         >
           <CountdownTimer />
         </motion.section>
