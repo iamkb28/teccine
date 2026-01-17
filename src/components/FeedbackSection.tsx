@@ -27,6 +27,18 @@ const FeedbackSection = () => {
     return () => clearInterval(interval);
   }, [isTyping]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    // Set height based on scrollHeight, with min and max constraints
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 200);
+    textarea.style.height = `${newHeight}px`;
+  }, [feedback]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!feedback.trim()) return;
@@ -71,10 +83,10 @@ const FeedbackSection = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               onSubmit={handleSubmit}
-              className="flex gap-3 items-end"
+              className="flex gap-2 sm:gap-3 items-start"
             >
               <div className="flex-1 relative">
-                <MessageCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                <MessageCircle className="absolute left-3 sm:left-4 top-[14px] sm:top-[18px] w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none z-10" />
                 <textarea
                   ref={textareaRef}
                   value={feedback}
@@ -84,11 +96,16 @@ const FeedbackSection = () => {
                   placeholder={placeholders[placeholderIndex]}
                   rows={1}
                   className={cn(
-                    'w-full pl-12 pr-4 py-3 rounded-xl bg-muted border-2 border-transparent',
+                    'w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-xl bg-muted border-2 border-transparent',
                     'focus:border-primary focus:outline-none focus:ring-0',
                     'placeholder:text-muted-foreground/60 resize-none',
-                    'transition-all duration-200'
+                    'transition-all duration-200',
+                    'min-h-[48px] max-h-[200px] overflow-y-auto',
+                    'text-sm sm:text-base',
+                    'leading-relaxed break-words',
+                    'whitespace-pre-wrap'
                   )}
+                  style={{ height: '48px' }}
                 />
               </div>
               <motion.button
@@ -97,13 +114,14 @@ const FeedbackSection = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  'px-6 py-3 rounded-xl font-display font-semibold flex items-center gap-2',
+                  'px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-display font-semibold flex items-center justify-center gap-2',
                   'gradient-primary text-primary-foreground',
                   'shadow-button hover:opacity-90 transition-opacity',
-                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
+                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none',
+                  'flex-shrink-0 min-h-[48px]'
                 )}
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-4 h-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Send</span>
               </motion.button>
             </motion.form>
