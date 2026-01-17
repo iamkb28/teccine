@@ -23,7 +23,7 @@ const Header = () => {
               <img 
                 src={teccineLogo} 
                 alt="Teccine - Your daily dose of tech news" 
-                className="h-[11rem] sm:h-[11.22rem] md:h-[14.28rem] lg:h-[20.4rem] xl:h-[24.48rem] drop-shadow-lg"
+                className="h-[12.13rem] sm:h-[12.37rem] md:h-[15.75rem] lg:h-[22.50rem] xl:h-[27.00rem] drop-shadow-lg"
               />
             </motion.div>
 
