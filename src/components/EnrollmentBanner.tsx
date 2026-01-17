@@ -65,12 +65,20 @@ const EnrollmentBanner = () => {
         setDeferredPrompt(null);
       }
 
-      // Step 3: Show success state
+      // Step 3: Show success state, then hide after 2 seconds
       setIsEnrolled(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      }, 2000);
     } catch (error) {
       console.error('Enrollment error:', error);
       // Still show success if notification permission was granted
       setIsEnrolled(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      }, 2000);
     }
   };
 
