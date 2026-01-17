@@ -5,26 +5,28 @@ import teccineLogo from '@/assets/teccine-logo.png';
 
 const Header = () => {
   return (
-    <header className="gradient-hero py-12 md:py-20 px-4">
-      <div className="container max-w-4xl mx-auto text-center">
-        {/* Logo */}
+    <header className="gradient-hero py-6 md:py-8 px-4">
+      {/* Top bar with logo */}
+      <div className="container max-w-4xl mx-auto mb-8">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="mb-6"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
         >
           <img 
             src={teccineLogo} 
             alt="Teccine - Your daily dose of tech news" 
-            className="h-32 md:h-40 mx-auto"
+            className="h-16 md:h-20"
           />
         </motion.div>
+      </div>
 
+      {/* Main header content */}
+      <div className="container max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 mb-6"
         >
           <Sparkles className="w-4 h-4 text-primary" />
@@ -50,7 +52,7 @@ const Header = () => {
           transition={{ delay: 2.5, duration: 0.5 }}
           className="mt-8 flex flex-wrap justify-center gap-3"
         >
-          {['🔮 AI', '📱 Mobile', '🎮 Gaming', '🔒 Privacy'].map((tag, i) => (
+          {['🔮 AI', '📱 Mobile', '🎮 Gaming', '🔒 Privacy'].map((tag) => (
             <span
               key={tag}
               className="px-3 py-1.5 rounded-full bg-card text-sm font-medium shadow-card hover:shadow-card-hover transition-shadow cursor-default"
