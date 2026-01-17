@@ -32,7 +32,7 @@ const Header = () => {
               initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
               animate={{ opacity: 1, scale: 1, rotate: 5 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex-shrink-0 z-10"
+              className="flex-shrink-0 z-10 -ml-3 sm:-ml-4 md:-ml-5 lg:-ml-7 xl:-ml-8"
             >
               <div className="relative w-[13rem] h-[13rem] sm:w-[14.28rem] sm:h-[14.28rem] md:w-[18.36rem] md:h-[18.36rem] lg:w-[24.48rem] lg:h-[24.48rem] xl:w-[26.52rem] xl:h-[26.52rem]">
                 {/* ChatGPT logo */}
