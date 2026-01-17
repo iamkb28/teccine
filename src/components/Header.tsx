@@ -9,38 +9,41 @@ const Header = () => {
     <header className="gradient-hero pt-2 md:pt-4 pb-6 md:pb-8 overflow-hidden">
       {/* Top bar with logo, badge, and verified sticker */}
       <div className="relative mb-8 overflow-visible">
-        {/* Simple traditional stamp with ChatGPT logo - top right */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
-          animate={{ opacity: 1, scale: 1, rotate: 5 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="absolute -top-6 md:-top-8 lg:-top-12 right-0 md:-right-8 lg:-right-12 z-10 max-w-[50vw] sm:max-w-none"
-        >
-          <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] 2xl:w-[36rem] 2xl:h-[36rem]">
-            {/* ChatGPT logo */}
-            <img 
-              src={chatgptLogo} 
-              alt="ChatGPT" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </motion.div>
-
-        {/* Logo and Fresh Daily badge */}
+        {/* Centered container with logo and stamp */}
         <div className="flex flex-col gap-3">
-          {/* Logo at extreme left */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex-shrink-0 -ml-4 sm:-ml-6 md:-ml-8"
-          >
-            <img 
-              src={teccineLogo} 
-              alt="Teccine - Your daily dose of tech news" 
-              className="h-52 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] drop-shadow-lg"
-            />
-          </motion.div>
+          {/* Logo and stamp in a centered horizontal container */}
+          <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-7 lg:gap-9 xl:gap-11 px-3 sm:px-4">
+            {/* Teccine logo */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex-shrink-0"
+            >
+              <img 
+                src={teccineLogo} 
+                alt="Teccine - Your daily dose of tech news" 
+                className="h-32 sm:h-44 md:h-56 lg:h-80 xl:h-96 drop-shadow-lg"
+              />
+            </motion.div>
+
+            {/* ChatGPT stamp - larger than logo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 5 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex-shrink-0 z-10"
+            >
+              <div className="relative w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-96 lg:h-96 xl:w-[26rem] xl:h-[26rem]">
+                {/* ChatGPT logo */}
+                <img 
+                  src={chatgptLogo} 
+                  alt="ChatGPT" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </motion.div>
+          </div>
 
           {/* Fresh Daily badge - center aligned */}
           <motion.div
