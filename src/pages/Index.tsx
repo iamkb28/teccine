@@ -7,6 +7,7 @@ import EmojiReactions from '@/components/EmojiReactions';
 import FeedbackSection from '@/components/FeedbackSection';
 import CountdownTimer from '@/components/CountdownTimer';
 import DailyStreak from '@/components/DailyStreak';
+import EnrollmentBanner from '@/components/EnrollmentBanner';
 import { getTodayPost, getArchivedPosts } from '@/data/posts';
 
 const Index = () => {
@@ -103,6 +104,7 @@ const Index = () => {
       </main>
 
       <FeedbackSection />
+      <EnrollmentBanner />
     </div>
   );
 };
