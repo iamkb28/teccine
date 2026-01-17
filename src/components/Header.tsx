@@ -2,37 +2,57 @@ import { motion } from 'framer-motion';
 import TypewriterText from './TypewriterText';
 import { Sparkles } from 'lucide-react';
 import teccineLogo from '@/assets/teccine-logo.png';
+import chatgptLogo from '@/assets/ChatGPT Image Jan 17, 2026, 05_52_43 PM.png';
 
 const Header = () => {
   return (
-    <header className="gradient-hero pt-2 md:pt-4 pb-6 md:pb-8">
-      {/* Top bar with logo and badge */}
-      <div className="relative mb-8">
-        <div className="flex items-center gap-2 md:gap-3 pr-4">
+    <header className="gradient-hero pt-2 md:pt-4 pb-6 md:pb-8 overflow-hidden">
+      {/* Top bar with logo, badge, and verified sticker */}
+      <div className="relative mb-8 overflow-visible">
+        {/* Simple traditional stamp with ChatGPT logo - top right */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
+          animate={{ opacity: 1, scale: 1, rotate: 5 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="absolute -top-6 md:-top-8 lg:-top-12 right-0 md:-right-8 lg:-right-12 z-10 max-w-[50vw] sm:max-w-none"
+        >
+          <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] 2xl:w-[36rem] 2xl:h-[36rem]">
+            {/* ChatGPT logo */}
+            <img 
+              src={chatgptLogo} 
+              alt="ChatGPT" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </motion.div>
+
+        {/* Logo and Fresh Daily badge */}
+        <div className="flex flex-col gap-3">
           {/* Logo at extreme left */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            whileHover={{ scale: 1.05 }}
-            className="flex-shrink-0 transition-transform duration-300 -ml-4 sm:-ml-6 md:-ml-8"
+            className="flex-shrink-0 -ml-4 sm:-ml-6 md:-ml-8"
           >
             <img 
               src={teccineLogo} 
               alt="Teccine - Your daily dose of tech news" 
-              className="h-32 sm:h-36 md:h-40 lg:h-44 xl:h-48 drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
+              className="h-52 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] drop-shadow-lg"
             />
           </motion.div>
 
-          {/* Badge right next to logo */}
+          {/* Fresh Daily badge - center aligned */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10"
+            className="flex justify-center"
           >
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Fresh daily at 9 AM</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Fresh daily at 9 AM</span>
+            </div>
           </motion.div>
         </div>
       </div>

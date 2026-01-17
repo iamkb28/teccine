@@ -63,12 +63,12 @@ const Index = () => {
               transition={{ delay: 0.9 }}
               className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors group"
             >
-              <div className="flex items-center gap-3">
-                <Archive className="w-5 h-5 text-muted-foreground" />
-                <span className="font-display font-semibold text-foreground">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <Archive className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0" />
+                <span className="font-display font-semibold text-foreground text-sm sm:text-base truncate">
                   Previous Updates
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium flex-shrink-0">
                   {archivedPosts.length}
                 </span>
               </div>

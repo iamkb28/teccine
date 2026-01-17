@@ -128,40 +128,40 @@ const DailyStreak = () => {
         </motion.div>
       )}
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <motion.div
             animate={isNewDay ? { 
               scale: [1, 1.3, 1],
               rotate: [0, -10, 10, 0]
             } : {}}
             transition={{ duration: 0.6 }}
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm"
+            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-sm flex-shrink-0"
           >
-            <Flame className="w-6 h-6" />
+            <Flame className="w-5 h-5 sm:w-6 sm:h-6" />
           </motion.div>
           
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <motion.span 
-                className="text-3xl font-display font-bold"
+                className="text-2xl sm:text-3xl font-display font-bold"
                 key={streakData.currentStreak}
                 initial={{ scale: 1.5, y: -10 }}
                 animate={{ scale: 1, y: 0 }}
               >
                 {streakData.currentStreak}
               </motion.span>
-              <span className="text-lg font-medium opacity-90">day streak</span>
-              <span className="text-xl">{getStreakEmoji(streakData.currentStreak)}</span>
+              <span className="text-base sm:text-lg font-medium opacity-90">day streak</span>
+              <span className="text-lg sm:text-xl">{getStreakEmoji(streakData.currentStreak)}</span>
             </div>
-            <p className="text-sm opacity-80">{getStreakMessage(streakData.currentStreak)}</p>
+            <p className="text-xs sm:text-sm opacity-80">{getStreakMessage(streakData.currentStreak)}</p>
           </div>
         </div>
 
         {streakData.longestStreak > 1 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm">
-            <Trophy className="w-4 h-4" />
-            <span className="text-sm font-medium">Best: {streakData.longestStreak}</span>
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/20 backdrop-blur-sm flex-shrink-0">
+            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="text-xs sm:text-sm font-medium">Best: {streakData.longestStreak}</span>
           </div>
         )}
       </div>
