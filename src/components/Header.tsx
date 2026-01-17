@@ -12,7 +12,7 @@ const Header = () => {
         {/* Centered container with logo and stamp */}
         <div className="flex flex-col gap-3">
           {/* Logo and stamp in a centered horizontal container */}
-          <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-7 lg:gap-9 xl:gap-11 px-3 sm:px-4">
+          <div className="flex items-center justify-center gap-6 sm:gap-8 md:gap-10 lg:gap-14 xl:gap-16 px-3 sm:px-4 w-full max-w-full">
             {/* Teccine logo */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -23,7 +23,7 @@ const Header = () => {
               <img 
                 src={teccineLogo} 
                 alt="Teccine - Your daily dose of tech news" 
-                className="h-32 sm:h-44 md:h-56 lg:h-80 xl:h-96 drop-shadow-lg"
+                className="h-[8.16rem] sm:h-[11.22rem] md:h-[14.28rem] lg:h-[20.4rem] xl:h-[24.48rem] drop-shadow-lg w-auto max-w-[calc(50vw-5rem)] sm:max-w-none"
               />
             </motion.div>
 
@@ -34,7 +34,7 @@ const Header = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex-shrink-0 z-10"
             >
-              <div className="relative w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-96 lg:h-96 xl:w-[26rem] xl:h-[26rem]">
+              <div className="relative w-[10.2rem] h-[10.2rem] sm:w-[14.28rem] sm:h-[14.28rem] md:w-[18.36rem] md:h-[18.36rem] lg:w-[24.48rem] lg:h-[24.48rem] xl:w-[26.52rem] xl:h-[26.52rem] max-w-[calc(50vw-5rem)] sm:max-w-none">
                 {/* ChatGPT logo */}
                 <img 
                   src={chatgptLogo} 
