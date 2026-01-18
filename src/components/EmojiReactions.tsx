@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useGlobalReactions } from '@/hooks/use-global-reactions';
 
 const reactions = [
   { emoji: '👍', label: 'Like' },
@@ -11,35 +11,14 @@ const reactions = [
 ];
 
 const EmojiReactions = () => {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [counts, setCounts] = useState<Record<string, number>>({
-    '👍': 42,
-    '❤️': 28,
-    '🤔': 15,
-    '🔥': 33,
-    '💡': 21,
-  });
-
-  const handleReaction = (emoji: string) => {
-    if (selected === emoji) {
-      setSelected(null);
-      setCounts(prev => ({ ...prev, [emoji]: prev[emoji] - 1 }));
-    } else {
-      if (selected) {
-        setCounts(prev => ({ ...prev, [selected]: prev[selected] - 1 }));
-      }
-      setSelected(emoji);
-      setCounts(prev => ({ ...prev, [emoji]: prev[emoji] + 1 }));
-    }
-  };
+  const { counts, selected, updateReaction } = useGlobalReactions();
 
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap">
-      <span className="text-sm text-muted-foreground mr-2">React:</span>
       {reactions.map(({ emoji, label }) => (
         <motion.button
           key={emoji}
-          onClick={() => handleReaction(emoji)}
+          onClick={() => updateReaction(emoji)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className={cn(
@@ -51,7 +30,7 @@ const EmojiReactions = () => {
           aria-label={label}
         >
           <span className="text-lg">{emoji}</span>
-          <span className="text-muted-foreground">{counts[emoji]}</span>
+          <span className="text-muted-foreground">{counts[emoji] || 0}</span>
           {selected === emoji && (
             <motion.div
               layoutId="selected-reaction"
