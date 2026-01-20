@@ -1,5 +1,6 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getDatabase, Database } from 'firebase/database';
 
 // Firebase configuration - replace with your own config
 const firebaseConfig = {
@@ -9,11 +10,13 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
 };
 
 // Initialize Firebase
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
+let realtimeDB: Database | null = null;
 
 export const getFirebaseApp = (): FirebaseApp => {
   if (!app) {
@@ -33,4 +36,12 @@ export const getFirestoreDB = (): Firestore => {
     db = getFirestore(app!);
   }
   return db;
+};
+
+export const getRealtimeDB = (): Database => {
+  if (!realtimeDB) {
+    getFirebaseApp();
+    realtimeDB = getDatabase(app!);
+  }
+  return realtimeDB;
 };

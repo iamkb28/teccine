@@ -5,7 +5,8 @@ import {
   updateDoc, 
   increment
 } from 'firebase/firestore';
-import { getFirestoreDB } from './firebase-config';
+import { ref, onValue, off, get } from 'firebase/database';
+import { getFirestoreDB, getRealtimeDB } from './firebase-config';
 
 export interface ReactionCounts {
   [emoji: string]: number;
@@ -30,11 +31,100 @@ const defaultCounts: ReactionCounts = {
 };
 
 const REACTIONS_DOC_ID = 'global-reactions';
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 /**
- * Fetch current reaction counts from Firebase Firestore
+ * Subscribe to real-time reaction count updates from Firebase Realtime Database
+ * This allows frontend to listen to changes without polling
+ */
+export const subscribeToReactions = (
+  callback: (counts: ReactionCounts) => void
+): (() => void) => {
+  try {
+    const db = getRealtimeDB();
+    const reactionsRef = ref(db, 'reactions/global-reactions');
+
+    const unsubscribe = onValue(
+      reactionsRef,
+      (snapshot) => {
+        const counts = snapshot.val() || defaultCounts;
+        callback(counts);
+      },
+      (error) => {
+        console.error('Error subscribing to reactions:', error);
+        callback(defaultCounts);
+      }
+    );
+
+    // Return cleanup function
+    return () => off(reactionsRef);
+  } catch (error) {
+    console.error('Error setting up real-time listener:', error);
+    callback(defaultCounts);
+    return () => {}; // no-op cleanup
+  }
+};
+
+/**
+ * Fetch current reaction counts from Firebase Realtime Database
  */
 export const fetchReactions = async (): Promise<ReactionsResponse> => {
+  try {
+    const db = getRealtimeDB();
+    const reactionsRef = ref(db, 'reactions/global-reactions');
+    const snapshot = await get(reactionsRef);
+
+    if (snapshot.exists()) {
+      return { counts: snapshot.val() };
+    } else {
+      return { counts: defaultCounts };
+    }
+  } catch (error) {
+    console.error('Error fetching reactions:', error);
+    // Return defaults on error
+    return { counts: defaultCounts };
+  }
+};
+
+/**
+ * Update reaction count via backend API
+ * Backend has write access while frontend only has read access
+ */
+export const updateReaction = async (
+  request: UpdateReactionRequest
+): Promise<ReactionsResponse> => {
+  try {
+    if (!BACKEND_API_URL) {
+      console.error('Backend API URL not configured');
+      throw new Error('Backend API URL not configured');
+    }
+
+    const response = await fetch(`${BACKEND_API_URL}/api/reactions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return { counts: data.counts };
+  } catch (error) {
+    console.error('Error updating reaction:', error);
+    // Try to fetch current state on error
+    return fetchReactions();
+  }
+};
+
+/**
+ * Legacy Firestore implementation (kept for backward compatibility)
+ * Can be removed once fully migrated to Realtime Database + Backend
+ */
+export const fetchReactionsFromFirestore = async (): Promise<ReactionsResponse> => {
   try {
     const db = getFirestoreDB();
     const docRef = doc(db, 'reactions', REACTIONS_DOC_ID);
@@ -49,16 +139,17 @@ export const fetchReactions = async (): Promise<ReactionsResponse> => {
       return { counts: defaultCounts };
     }
   } catch (error) {
-    console.error('Error fetching reactions:', error);
+    console.error('Error fetching reactions from Firestore:', error);
     // Return defaults on error
     return { counts: defaultCounts };
   }
 };
 
 /**
- * Update reaction count in Firebase Firestore
+ * Legacy Firestore update (kept for backward compatibility)
+ * Can be removed once fully migrated to Realtime Database + Backend
  */
-export const updateReaction = async (
+export const updateReactionFirestore = async (
   request: UpdateReactionRequest
 ): Promise<ReactionsResponse> => {
   try {
@@ -102,7 +193,7 @@ export const updateReaction = async (
   } catch (error) {
     console.error('Error updating reaction:', error);
     // Try to fetch current state on error
-    return fetchReactions();
+    return fetchReactionsFromFirestore();
   }
 };
 

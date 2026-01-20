@@ -15,6 +15,11 @@ dist-ssr
 .env.local
 .env.production
 
+# Firebase backend
+firebase-backend/node_modules
+firebase-backend/.env
+firebase-backend/package-lock.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

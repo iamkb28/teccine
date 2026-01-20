@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchReactions, updateReaction, getUserSelectedReaction, setUserSelectedReaction } from '@/lib/reactions-api';
+import { 
+  fetchReactions, 
+  updateReaction, 
+  getUserSelectedReaction, 
+  setUserSelectedReaction,
+  subscribeToReactions 
+} from '@/lib/reactions-api';
 
 const defaultCounts: Record<string, number> = {
   '👍': 0,
@@ -20,12 +26,24 @@ export const useGlobalReactions = () => {
     setSelected(stored);
   }, []);
 
-  // Fetch reactions from API
+  // Set up real-time listener for Firebase Realtime Database
+  useEffect(() => {
+    const unsubscribe = subscribeToReactions((counts) => {
+      // Update the query cache with real-time data
+      queryClient.setQueryData(['reactions'], { counts });
+    });
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [queryClient]);
+
+  // Fetch reactions from Firebase (initial load)
   const { data, isLoading, error } = useQuery({
     queryKey: ['reactions'],
     queryFn: fetchReactions,
-    refetchInterval: 5000, // Refetch every 5 seconds to get latest counts
-    staleTime: 2000, // Consider data stale after 2 seconds
+    staleTime: Infinity, // Data is always fresh via real-time listener
     retry: 2,
     // Fallback to defaults if API fails
     placeholderData: { counts: defaultCounts },
@@ -65,10 +83,7 @@ export const useGlobalReactions = () => {
         queryClient.setQueryData(['reactions'], context.previousData);
       }
     },
-    onSettled: () => {
-      // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['reactions'] });
-    },
+    // Note: No need to refetch as real-time listener will update automatically
   });
 
   const handleUpdateReaction = (emoji: string) => {
