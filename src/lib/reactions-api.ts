@@ -163,7 +163,7 @@ export const updateReactionFirestore = async (
     }
 
     // Build update object for atomic update
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, ReturnType<typeof increment>> = {};
 
     if (request.action === 'increment') {
       // Increment the selected emoji
