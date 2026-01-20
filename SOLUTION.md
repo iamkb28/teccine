@@ -97,7 +97,7 @@ Add these **8 variables**:
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | `123456789` | Same as above |
 | `VITE_FIREBASE_APP_ID` | `1:123456789:web:abc123` | Same as above |
 | `VITE_FIREBASE_DATABASE_URL` | `https://your-project-default-rtdb.firebaseio.com` | Same as above |
-| `VITE_BACKEND_API_URL` | `https://teccine-backend.onrender.com` | Your backend URL (from Step 5) |
+| `VITE_BACKEND_API_URL` | `https://your-backend-name.onrender.com` | Your backend URL (from Step 5) |
 
 **Important:** 
 - Set for all environments: Production, Preview, Development
@@ -116,7 +116,7 @@ The backend MUST be deployed separately. Here's the easiest way:
 2. Connect your GitHub repository
 3. Configure:
    ```
-   Name: teccine-backend
+   Name: your-app-name-backend
    Root Directory: firebase-backend
    Environment: Node
    Build Command: npm install
@@ -147,17 +147,17 @@ In Render, add these **10 variables**:
 #### 5.4 Deploy
 1. Click **"Create Web Service"**
 2. Wait for deployment (2-3 minutes)
-3. Your backend URL: `https://teccine-backend.onrender.com`
+3. Your backend URL: `https://your-app-name-backend.onrender.com`
 
 #### 5.5 Update Frontend
 1. Go back to Vercel → Settings → Environment Variables
-2. Update `VITE_BACKEND_API_URL` to: `https://teccine-backend.onrender.com`
+2. Update `VITE_BACKEND_API_URL` to: `https://your-app-name-backend.onrender.com`
 3. Go to Deployments → Redeploy
 
 ### Step 6: Test Everything
 
 #### Test Backend:
-Visit: `https://teccine-backend.onrender.com/health`
+Visit: `https://your-app-name-backend.onrender.com/health`
 
 Should return:
 ```json
