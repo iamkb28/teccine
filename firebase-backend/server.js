@@ -13,6 +13,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Default reaction counts - matches frontend default values
+const DEFAULT_REACTION_COUNTS = {
+  '👍': 42,
+  '❤️': 28,
+  '🤔': 15,
+  '🔥': 33,
+  '💡': 21,
+};
+
 // Initialize Firebase Admin SDK
 let db;
 try {
@@ -65,13 +74,7 @@ app.get('/api/reactions', async (req, res) => {
   try {
     const reactionsRef = db.ref('reactions/global-reactions');
     const snapshot = await reactionsRef.once('value');
-    const counts = snapshot.val() || {
-      '👍': 0,
-      '❤️': 0,
-      '🤔': 0,
-      '🔥': 0,
-      '💡': 0,
-    };
+    const counts = snapshot.val() || DEFAULT_REACTION_COUNTS;
 
     res.json({ counts });
   } catch (error) {
@@ -101,13 +104,7 @@ app.post('/api/reactions', async (req, res) => {
 
     // Use transaction to ensure atomic updates and avoid race conditions
     await reactionsRef.transaction((currentData) => {
-      const counts = currentData || {
-        '👍': 0,
-        '❤️': 0,
-        '🤔': 0,
-        '🔥': 0,
-        '💡': 0,
-      };
+      const counts = currentData || DEFAULT_REACTION_COUNTS;
 
       // Initialize emoji count if it doesn't exist
       if (typeof counts[emoji] !== 'number') {
@@ -145,22 +142,14 @@ app.post('/api/reactions', async (req, res) => {
  */
 app.post('/api/reactions/initialize', async (req, res) => {
   try {
-    const defaultCounts = {
-      '👍': 42,
-      '❤️': 28,
-      '🤔': 15,
-      '🔥': 33,
-      '💡': 21,
-    };
-
     const reactionsRef = db.ref('reactions/global-reactions');
     const snapshot = await reactionsRef.once('value');
 
     if (!snapshot.exists()) {
-      await reactionsRef.set(defaultCounts);
+      await reactionsRef.set(DEFAULT_REACTION_COUNTS);
       res.json({ 
         message: 'Reactions initialized successfully',
-        counts: defaultCounts 
+        counts: DEFAULT_REACTION_COUNTS 
       });
     } else {
       res.json({ 

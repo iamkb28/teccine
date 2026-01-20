@@ -5,7 +5,7 @@ import {
   updateDoc, 
   increment
 } from 'firebase/firestore';
-import { ref, onValue, off, get } from 'firebase/database';
+import { ref, onValue, get } from 'firebase/database';
 import { getFirestoreDB, getRealtimeDB } from './firebase-config';
 
 export interface ReactionCounts {
@@ -44,6 +44,7 @@ export const subscribeToReactions = (
     const db = getRealtimeDB();
     const reactionsRef = ref(db, 'reactions/global-reactions');
 
+    // onValue returns an unsubscribe function
     const unsubscribe = onValue(
       reactionsRef,
       (snapshot) => {
@@ -56,8 +57,8 @@ export const subscribeToReactions = (
       }
     );
 
-    // Return cleanup function
-    return () => off(reactionsRef);
+    // Return the unsubscribe function provided by Firebase
+    return unsubscribe;
   } catch (error) {
     console.error('Error setting up real-time listener:', error);
     callback(defaultCounts);
