@@ -141,13 +141,3 @@ export const useGlobalReactions = () => {
     error,
   };
 };
-
-  return {
-    counts: data?.counts || defaultCounts,
-    selected,
-    updateReaction: handleUpdateReaction,
-    isLoading,
-    isUpdating: mutation.isPending,
-    error,
-  };
-};
