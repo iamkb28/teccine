@@ -42,7 +42,7 @@ export const useGlobalReactions = () => {
   // Fetch reactions from Firebase (initial load)
   const { data, isLoading, error } = useQuery({
     queryKey: ['reactions'],
-    queryFn: fetchReactions,
+    queryFn: fetchReactionsFromFirestore, // Use Firestore as the primary source
     staleTime: Infinity, // Data is always fresh via real-time listener
     retry: 2,
     // Fallback to defaults if API fails

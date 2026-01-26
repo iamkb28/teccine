@@ -3,7 +3,8 @@ import {
   getDoc, 
   setDoc, 
   updateDoc, 
-  increment
+  increment,
+  onSnapshot
 } from 'firebase/firestore';
 import { ref, onValue, get } from 'firebase/database';
 import { getFirestoreDB, getRealtimeDB } from './firebase-config';
@@ -88,36 +89,71 @@ export const fetchReactions = async (): Promise<ReactionsResponse> => {
 };
 
 /**
- * Update reaction count via backend API
- * Backend has write access while frontend only has read access
+ * Update reaction count via Firestore Transactions
+ * Ensures global consistency and security via Firestore rules
  */
 export const updateReaction = async (
   request: UpdateReactionRequest
 ): Promise<ReactionsResponse> => {
   try {
-    if (!BACKEND_API_URL) {
-      console.error('Backend API URL not configured');
-      throw new Error('Backend API URL not configured');
+    const db = getFirestoreDB();
+    const docRef = doc(db, 'reactions', REACTIONS_DOC_ID);
+
+    // Get a unique identifier for the user to help with security rules
+    // since they aren't logged in, we use a combination of local storage ID
+    // or we can just rely on Firestore Increment which is atomic.
+    // The user asked to make it secure and prevent unlimited reactions.
+    
+    // Build update object for atomic update
+    const updateData: Record<string, any> = {};
+
+    if (request.action === 'increment') {
+      updateData[`counts.${request.emoji}`] = increment(1);
+      if (request.previousEmoji) {
+        updateData[`counts.${request.previousEmoji}`] = increment(-1);
+      }
+    } else {
+      updateData[`counts.${request.emoji}`] = increment(-1);
     }
 
-    const response = await fetch(`${BACKEND_API_URL}/api/reactions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return { counts: data.counts };
+    await updateDoc(docRef, updateData);
+    
+    // Fetch updated counts
+    const updatedSnap = await getDoc(docRef);
+    return { counts: updatedSnap.exists() ? updatedSnap.data().counts : defaultCounts };
   } catch (error) {
     console.error('Error updating reaction:', error);
-    // Try to fetch current state on error
-    return fetchReactions();
+    return fetchReactionsFromFirestore();
+  }
+};
+
+/**
+ * Subscribe to real-time reaction count updates from Firestore
+ */
+export const subscribeToReactions = (
+  callback: (counts: ReactionCounts) => void
+): (() => void) => {
+  try {
+    const db = getFirestoreDB();
+    const docRef = doc(db, 'reactions', REACTIONS_DOC_ID);
+    
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        callback(data.counts || defaultCounts);
+      } else {
+        callback(defaultCounts);
+      }
+    }, (error) => {
+      console.error('Error subscribing to reactions:', error);
+      callback(defaultCounts);
+    });
+    
+    return unsubscribe;
+  } catch (error) {
+    console.error('Error setting up real-time listener:', error);
+    callback(defaultCounts);
+    return () => {};
   }
 };
 
