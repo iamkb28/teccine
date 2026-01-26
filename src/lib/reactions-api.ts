@@ -24,86 +24,27 @@ export interface UpdateReactionRequest {
 }
 
 const defaultCounts: ReactionCounts = {
-  '👍': 42,
-  '❤️': 28,
-  '🤔': 15,
-  '🔥': 33,
-  '💡': 21,
+  '👍': 0,
+  '❤️': 0,
+  '🤔': 0,
+  '🔥': 0,
+  '💡': 0,
 };
 
 const REACTIONS_DOC_ID = 'global-reactions';
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
-
-/**
- * Subscribe to real-time reaction count updates from Firebase Realtime Database
- * This allows frontend to listen to changes without polling
- */
-export const subscribeToReactions = (
-  callback: (counts: ReactionCounts) => void
-): (() => void) => {
-  try {
-    const db = getRealtimeDB();
-    const reactionsRef = ref(db, 'reactions/global-reactions');
-
-    // onValue returns an unsubscribe function
-    const unsubscribe = onValue(
-      reactionsRef,
-      (snapshot) => {
-        const counts = snapshot.val() || defaultCounts;
-        callback(counts);
-      },
-      (error) => {
-        console.error('Error subscribing to reactions:', error);
-        callback(defaultCounts);
-      }
-    );
-
-    // Return the unsubscribe function provided by Firebase
-    return unsubscribe;
-  } catch (error) {
-    console.error('Error setting up real-time listener:', error);
-    callback(defaultCounts);
-    return () => {}; // no-op cleanup
-  }
-};
-
-/**
- * Fetch current reaction counts from Firebase Realtime Database
- */
-export const fetchReactions = async (): Promise<ReactionsResponse> => {
-  try {
-    const db = getRealtimeDB();
-    const reactionsRef = ref(db, 'reactions/global-reactions');
-    const snapshot = await get(reactionsRef);
-
-    if (snapshot.exists()) {
-      return { counts: snapshot.val() };
-    } else {
-      return { counts: defaultCounts };
-    }
-  } catch (error) {
-    console.error('Error fetching reactions:', error);
-    // Return defaults on error
-    return { counts: defaultCounts };
-  }
-};
 
 /**
  * Update reaction count via Firestore Transactions
  * Ensures global consistency and security via Firestore rules
  */
 export const updateReaction = async (
-  request: UpdateReactionRequest
+  request: UpdateReactionRequest,
+  postId: string
 ): Promise<ReactionsResponse> => {
   try {
     const db = getFirestoreDB();
-    const docRef = doc(db, 'reactions', REACTIONS_DOC_ID);
+    const docRef = doc(db, 'reactions', postId);
 
-    // Get a unique identifier for the user to help with security rules
-    // since they aren't logged in, we use a combination of local storage ID
-    // or we can just rely on Firestore Increment which is atomic.
-    // The user asked to make it secure and prevent unlimited reactions.
-    
     // Build update object for atomic update
     const updateData: Record<string, any> = {};
 
@@ -116,26 +57,40 @@ export const updateReaction = async (
       updateData[`counts.${request.emoji}`] = increment(-1);
     }
 
-    await updateDoc(docRef, updateData);
+    try {
+      await updateDoc(docRef, updateData);
+    } catch (e: any) {
+      if (e.code === 'not-found') {
+        // Initialize for this post if doc doesn't exist
+        const initialCounts = { ...defaultCounts };
+        if (request.action === 'increment') {
+          initialCounts[request.emoji] = 1;
+        }
+        await setDoc(docRef, { counts: initialCounts });
+      } else {
+        throw e;
+      }
+    }
     
     // Fetch updated counts
     const updatedSnap = await getDoc(docRef);
     return { counts: updatedSnap.exists() ? updatedSnap.data().counts : defaultCounts };
   } catch (error) {
     console.error('Error updating reaction:', error);
-    return fetchReactionsFromFirestore();
+    return { counts: defaultCounts };
   }
 };
 
 /**
- * Subscribe to real-time reaction count updates from Firestore
+ * Subscribe to real-time reaction count updates from Firestore for a specific post
  */
 export const subscribeToReactions = (
+  postId: string,
   callback: (counts: ReactionCounts) => void
 ): (() => void) => {
   try {
     const db = getFirestoreDB();
-    const docRef = doc(db, 'reactions', REACTIONS_DOC_ID);
+    const docRef = doc(db, 'reactions', postId);
     
     const unsubscribe = onSnapshot(docRef, (snapshot) => {
       if (snapshot.exists()) {

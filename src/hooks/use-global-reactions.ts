@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  fetchReactions, 
   fetchReactionsFromFirestore,
   updateReaction, 
   getUserSelectedReaction, 
   setUserSelectedReaction,
   subscribeToReactions 
 } from '@/lib/reactions-api';
+import { getTodayPost } from '@/data/posts';
 
 const defaultCounts: Record<string, number> = {
   '👍': 0,
@@ -19,31 +19,46 @@ const defaultCounts: Record<string, number> = {
 
 export const useGlobalReactions = () => {
   const queryClient = useQueryClient();
-  const [selected, setSelected] = useState<string | null>(() => getUserSelectedReaction());
+  const todayPost = getTodayPost();
+  const postId = todayPost?.id || 'default';
+  
+  const [selected, setSelected] = useState<string | null>(() => {
+    const stored = getUserSelectedReaction();
+    // Check if stored reaction is for current post
+    const storedPostId = localStorage.getItem('userSelectedReactionPostId');
+    if (storedPostId === postId) return stored;
+    return null;
+  });
 
   // Sync selected state with localStorage
   useEffect(() => {
-    const stored = getUserSelectedReaction();
-    setSelected(stored);
-  }, []);
+    const storedPostId = localStorage.getItem('userSelectedReactionPostId');
+    if (storedPostId === postId) {
+      const stored = getUserSelectedReaction();
+      setSelected(stored);
+    } else {
+      setSelected(null);
+      setUserSelectedReaction(null);
+    }
+  }, [postId]);
 
-  // Set up real-time listener for Firebase Realtime Database
+  // Set up real-time listener for Firestore
   useEffect(() => {
-    const unsubscribe = subscribeToReactions((counts) => {
+    const unsubscribe = subscribeToReactions(postId, (counts) => {
       // Update the query cache with real-time data
-      queryClient.setQueryData(['reactions'], { counts });
+      queryClient.setQueryData(['reactions', postId], { counts });
     });
 
     // Cleanup on unmount
     return () => {
       unsubscribe();
     };
-  }, [queryClient]);
+  }, [queryClient, postId]);
 
   // Fetch reactions from Firebase (initial load)
   const { data, isLoading, error } = useQuery({
-    queryKey: ['reactions'],
-    queryFn: fetchReactionsFromFirestore, // Use Firestore as the primary source
+    queryKey: ['reactions', postId],
+    queryFn: () => fetchReactionsFromFirestore(), // This would need to be updated to accept postId if you want to fetch specific post counts initially
     staleTime: Infinity, // Data is always fresh via real-time listener
     retry: 2,
     // Fallback to defaults if API fails
@@ -52,13 +67,13 @@ export const useGlobalReactions = () => {
 
   // Mutation to update reactions
   const mutation = useMutation({
-    mutationFn: updateReaction,
+    mutationFn: (vars: any) => updateReaction(vars, postId),
     onMutate: async (variables) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['reactions'] });
+      await queryClient.cancelQueries({ queryKey: ['reactions', postId] });
 
       // Snapshot previous value
-      const previousData = queryClient.getQueryData<{ counts: Record<string, number> }>(['reactions']);
+      const previousData = queryClient.getQueryData<{ counts: Record<string, number> }>(['reactions', postId]);
 
       // Optimistically update
       if (previousData) {
@@ -73,7 +88,7 @@ export const useGlobalReactions = () => {
           newCounts[variables.emoji] = Math.max(0, (newCounts[variables.emoji] || 0) - 1);
         }
 
-        queryClient.setQueryData(['reactions'], { counts: newCounts });
+        queryClient.setQueryData(['reactions', postId], { counts: newCounts });
       }
 
       return { previousData };
@@ -81,52 +96,51 @@ export const useGlobalReactions = () => {
     onError: (err, variables, context) => {
       // Rollback on error
       if (context?.previousData) {
-        queryClient.setQueryData(['reactions'], context.previousData);
+        queryClient.setQueryData(['reactions', postId], context.previousData);
       }
     },
-    // Note: No need to refetch as real-time listener will update automatically
   });
 
   const handleUpdateReaction = (emoji: string) => {
-    // Prevent multiple rapid clicks
-    if (mutation.isPending) {
-      return;
-    }
+    if (mutation.isPending) return;
 
     if (selected === emoji) {
-      // Deselecting - decrease count
       const currentSelected = selected;
       setSelected(null);
       setUserSelectedReaction(null);
-      mutation.mutate({
-        emoji,
-        action: 'decrement',
-      }, {
+      localStorage.removeItem('userSelectedReactionPostId');
+      mutation.mutate({ emoji, action: 'decrement' }, {
         onError: () => {
-          // Rollback UI state on error
           setSelected(currentSelected);
           setUserSelectedReaction(currentSelected);
+          localStorage.setItem('userSelectedReactionPostId', postId);
         }
       });
     } else {
-      // Selecting new reaction
       const previousEmoji = selected || undefined;
       const newSelected = emoji;
       setSelected(newSelected);
       setUserSelectedReaction(newSelected);
-      mutation.mutate({
-        emoji,
-        action: 'increment',
-        previousEmoji,
-      }, {
+      localStorage.setItem('userSelectedReactionPostId', postId);
+      mutation.mutate({ emoji, action: 'increment', previousEmoji }, {
         onError: () => {
-          // Rollback UI state on error
           setSelected(previousEmoji || null);
           setUserSelectedReaction(previousEmoji || null);
+          if (!previousEmoji) localStorage.removeItem('userSelectedReactionPostId');
         }
       });
     }
   };
+
+  return {
+    counts: data?.counts || defaultCounts,
+    selected,
+    updateReaction: handleUpdateReaction,
+    isLoading,
+    isUpdating: mutation.isPending,
+    error,
+  };
+};
 
   return {
     counts: data?.counts || defaultCounts,
