@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   fetchReactions, 
+  fetchReactionsFromFirestore,
   updateReaction, 
   getUserSelectedReaction, 
   setUserSelectedReaction,
