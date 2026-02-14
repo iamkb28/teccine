@@ -50,11 +50,31 @@ export const updateReaction = async (
 
     if (request.action === 'increment') {
       updateData[`counts.${request.emoji}`] = increment(1);
+      // Map to top-level fields for security rules
+      if (request.emoji === '👍') updateData['likes'] = increment(1);
+      if (request.emoji === '👎') updateData['dislikes'] = increment(1);
+      if (request.emoji === '❤️') updateData['hearts'] = increment(1);
+      if (request.emoji === '🤔') updateData['thinks'] = increment(1);
+      if (request.emoji === '🔥') updateData['fires'] = increment(1);
+      if (request.emoji === '💡') updateData['ideas'] = increment(1);
+
       if (request.previousEmoji) {
         updateData[`counts.${request.previousEmoji}`] = increment(-1);
+        if (request.previousEmoji === '👍') updateData['likes'] = increment(-1);
+        if (request.previousEmoji === '👎') updateData['dislikes'] = increment(-1);
+        if (request.previousEmoji === '❤️') updateData['hearts'] = increment(-1);
+        if (request.previousEmoji === '🤔') updateData['thinks'] = increment(-1);
+        if (request.previousEmoji === '🔥') updateData['fires'] = increment(-1);
+        if (request.previousEmoji === '💡') updateData['ideas'] = increment(-1);
       }
     } else {
       updateData[`counts.${request.emoji}`] = increment(-1);
+      if (request.emoji === '👍') updateData['likes'] = increment(-1);
+      if (request.emoji === '👎') updateData['dislikes'] = increment(-1);
+      if (request.emoji === '❤️') updateData['hearts'] = increment(-1);
+      if (request.emoji === '🤔') updateData['thinks'] = increment(-1);
+      if (request.emoji === '🔥') updateData['fires'] = increment(-1);
+      if (request.emoji === '💡') updateData['ideas'] = increment(-1);
     }
 
     try {
