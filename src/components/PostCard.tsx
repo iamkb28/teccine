@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lightbulb, Zap, Users } from 'lucide-react';
 import { Post } from '@/data/posts';
 import { cn } from '@/lib/utils';
-import { useGlobalReactions } from '@/hooks/use-global-reactions';
+import { useLocalReaction } from '@/hooks/use-local-reaction';
 
 interface PostCardProps {
   post: Post;
@@ -25,7 +25,7 @@ const themeBgClasses = {
 const PostCard = ({ post, isToday = false }: PostCardProps) => {
   const [isExpanded, setIsExpanded] = useState(isToday);
   const theme = post.theme || 'coral';
-  const { counts, selected, updateReaction } = useGlobalReactions();
+  const { selected, updateReaction } = useLocalReaction(post.id);
 
   const sections = [
     {
@@ -163,7 +163,6 @@ const PostCard = ({ post, isToday = false }: PostCardProps) => {
           aria-label="Love"
         >
           <span className="text-lg">❤️</span>
-          <span className="text-muted-foreground">{counts['❤️'] || 0}</span>
           {selected === '❤️' && (
             <motion.div
           layoutId={`selected-reaction-${post.id}`}
