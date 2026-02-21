@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useGlobalReactions } from '@/hooks/use-global-reactions';
+import { useLocalReaction } from '@/hooks/use-local-reaction';
 
 const reactions = [
   { emoji: '👍', label: 'Like' },
@@ -11,7 +11,7 @@ const reactions = [
 ];
 
 const EmojiReactions = () => {
-  const { counts, selected, updateReaction } = useGlobalReactions();
+  const { selected, updateReaction } = useLocalReaction('global');
 
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -30,7 +30,6 @@ const EmojiReactions = () => {
           aria-label={label}
         >
           <span className="text-lg">{emoji}</span>
-          <span className="text-muted-foreground">{counts[emoji] || 0}</span>
           {selected === emoji && (
             <motion.div
               layoutId="selected-reaction"
