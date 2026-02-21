@@ -51,18 +51,13 @@ export const updateReaction = async (
   emoji: string,
   postId: string
 ): Promise<ReactionsResponse> => {
-  try {
-    const res = await fetch(`/api/reactions/${postId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: getUserId(), emoji }),
-    });
-    if (!res.ok) throw new Error('Failed to update reaction');
-    return await res.json();
-  } catch (error) {
-    console.error('Error updating reaction:', error);
-    return { counts: defaultCounts };
-  }
+  const res = await fetch(`/api/reactions/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: getUserId(), emoji }),
+  });
+  if (!res.ok) throw new Error('Failed to update reaction');
+  return await res.json();
 };
 
 /**

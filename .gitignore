@@ -24,6 +24,7 @@ firebase-backend/package-lock.json
 __pycache__/
 *.pyc
 *.pyo
+*.db
 
 # Editor directories and files
 .vscode/*
