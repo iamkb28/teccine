@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lightbulb, Zap, Users } from 'lucide-react';
 import { Post } from '@/data/posts';
 import { cn } from '@/lib/utils';
+import { useGlobalReactions } from '@/hooks/use-global-reactions';
 
 interface PostCardProps {
   post: Post;
@@ -24,6 +25,7 @@ const themeBgClasses = {
 const PostCard = ({ post, isToday = false }: PostCardProps) => {
   const [isExpanded, setIsExpanded] = useState(isToday);
   const theme = post.theme || 'coral';
+  const { counts, selected, updateReaction } = useGlobalReactions();
 
   const sections = [
     {
@@ -146,6 +148,32 @@ const PostCard = ({ post, isToday = false }: PostCardProps) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="flex justify-end px-6 md:px-8 pb-4">
+        <motion.button
+          onClick={() => updateReaction('❤️')}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className={cn(
+            'relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all',
+            selected === '❤️'
+              ? 'bg-primary/20 shadow-md'
+              : 'bg-muted hover:bg-muted/80'
+          )}
+          aria-label="Love"
+        >
+          <span className="text-lg">❤️</span>
+          <span className="text-muted-foreground">{counts['❤️'] || 0}</span>
+          {selected === '❤️' && (
+            <motion.div
+          layoutId={`selected-reaction-${post.id}`}
+              className="absolute inset-0 rounded-full border-2 border-primary"
+              initial={false}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+          )}
+        </motion.button>
+      </div>
     </motion.article>
   );
 };

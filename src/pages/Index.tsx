@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Archive, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
-import EmojiReactions from '@/components/EmojiReactions';
 import FeedbackSection from '@/components/FeedbackSection';
 import CountdownTimer from '@/components/CountdownTimer';
 import DailyStreak from '@/components/DailyStreak';
@@ -24,14 +23,6 @@ const Index = () => {
         {todayPost && (
           <section>
             <PostCard post={todayPost} isToday />
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-6"
-            >
-              <EmojiReactions />
-            </motion.div>
           </section>
         )}
 
