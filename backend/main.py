@@ -1,6 +1,29 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, String, PrimaryKeyConstraint
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import DeclarativeBase, Session
+from fastapi.middleware.cors import CORSMiddleware
+
+DATABASE_URL = "sqlite:///./reactions.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class Reaction(Base):
+    __tablename__ = "reactions"
+
+    post_id = Column(String, nullable=False)
+    user_id = Column(String, nullable=False)
+    emoji = Column(String, nullable=False)
+
+    __table_args__ = (PrimaryKeyConstraint("post_id", "user_id"),)
+
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -11,18 +34,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory storage: {post_id: {user_id: emoji}}
-reactions_data: dict[str, dict[str, str]] = {}
-
 DEFAULT_EMOJIS = ["👍", "❤️", "🤔", "🔥", "💡"]
 
 
-def get_counts(post_id: str) -> dict[str, int]:
-    user_reactions = reactions_data.get(post_id, {})
+def get_counts(db: Session, post_id: str) -> dict[str, int]:
+    reactions = db.query(Reaction).filter(Reaction.post_id == post_id).all()
     counts: dict[str, int] = {e: 0 for e in DEFAULT_EMOJIS}
-    for emoji in user_reactions.values():
-        if emoji in counts:
-            counts[emoji] += 1
+    for r in reactions:
+        if r.emoji in counts:
+            counts[r.emoji] += 1
     return counts
 
 
@@ -33,28 +53,45 @@ class ReactionRequest(BaseModel):
 
 @app.get("/api/reactions/{post_id}")
 def get_reactions(post_id: str):
-    return {"counts": get_counts(post_id)}
+    with Session(engine) as db:
+        return {"counts": get_counts(db, post_id)}
 
 
 @app.post("/api/reactions/{post_id}")
 def update_reaction(post_id: str, req: ReactionRequest):
-    if post_id not in reactions_data:
-        reactions_data[post_id] = {}
+    with Session(engine) as db:
+        existing = (
+            db.query(Reaction)
+            .filter(Reaction.post_id == post_id, Reaction.user_id == req.user_id)
+            .first()
+        )
 
-    user_reactions = reactions_data[post_id]
-    current = user_reactions.get(req.user_id)
+        if req.emoji == "" or (existing and existing.emoji == req.emoji):
+            # Remove reaction (toggle off)
+            if existing:
+                db.delete(existing)
+        else:
+            if existing:
+                existing.emoji = req.emoji
+            else:
+                db.add(Reaction(post_id=post_id, user_id=req.user_id, emoji=req.emoji))
 
-    if req.emoji == "" or current == req.emoji:
-        # Remove reaction (toggle off)
-        user_reactions.pop(req.user_id, None)
-    else:
-        # Set new reaction (replaces old one automatically)
-        user_reactions[req.user_id] = req.emoji
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Database error") from e
 
-    return {
-        "counts": get_counts(post_id),
-        "user_reaction": user_reactions.get(req.user_id),
-    }
+        # Determine the user's current reaction without a second query
+        if req.emoji == "" or (existing and existing.emoji == req.emoji):
+            current_emoji = None
+        else:
+            current_emoji = req.emoji
+
+        return {
+            "counts": get_counts(db, post_id),
+            "user_reaction": current_emoji,
+        }
 
 
 @app.get("/health")
