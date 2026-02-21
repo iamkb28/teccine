@@ -20,6 +20,11 @@ firebase-backend/node_modules
 firebase-backend/.env
 firebase-backend/package-lock.json
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
