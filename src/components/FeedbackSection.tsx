@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Check, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import emailjs from '@emailjs/browser';
 
 const placeholders = [
   "Tell us what you liked...",
@@ -10,11 +11,14 @@ const placeholders = [
   "How can we explain things better?",
 ];
 
+const MAX_TEXTAREA_HEIGHT = 200;
+
 const FeedbackSection = () => {
   const [feedback, setFeedback] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [isOverflow, setIsOverflow] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -35,15 +39,31 @@ const FeedbackSection = () => {
     // Reset height to auto to get the correct scrollHeight
     textarea.style.height = 'auto';
     // Set height based on scrollHeight, with min and max constraints
-    const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 200);
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), MAX_TEXTAREA_HEIGHT);
     textarea.style.height = `${newHeight}px`;
+    // Enable scroll only when content overflows the max height
+    setIsOverflow(textarea.scrollHeight > MAX_TEXTAREA_HEIGHT);
   }, [feedback]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!feedback.trim()) return;
 
-    console.log('Feedback submitted:', feedback);
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (serviceId && templateId && publicKey) {
+      emailjs.send(
+        serviceId,
+        templateId,
+        { message: feedback, to_email: 'dailyteccine@gmail.com' },
+        publicKey
+      ).catch((err) => {
+        console.error('EmailJS send error:', err);
+      });
+    }
+
     setIsSubmitted(true);
     setFeedback('');
 
@@ -100,7 +120,8 @@ const FeedbackSection = () => {
                     'focus:border-primary focus:outline-none focus:ring-0',
                     'placeholder:text-muted-foreground/60 resize-none',
                     'transition-all duration-200',
-                    'min-h-[48px] max-h-[200px] overflow-y-auto',
+                    'min-h-[48px] max-h-[200px]',
+                    isOverflow ? 'overflow-y-auto' : 'overflow-y-hidden',
                     'text-sm sm:text-base',
                     'leading-relaxed break-words',
                     'whitespace-pre-wrap'
